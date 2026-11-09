@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>roujla - محرك بحث</title>
+<meta name="description" content="roujla: ابحث في الإنترنت من صفحة واحدة بسيطة. Search the web from one simple page.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%2316a34a'/><text x='50' y='70' font-size='62' text-anchor='middle' fill='white' font-family='Arial' font-weight='700'>r</text></svg>">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: { extend: { colors: { brand: { 50:'#f0fdf4', 100:'#dcfce7', 500:'#22c55e', 600:'#16a34a', 700:'#15803d' } } } }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+  body { font-family: 'Cairo', system-ui, sans-serif; }
+  .logo { font-weight: 900; letter-spacing: -0.04em; line-height: 1; direction: ltr; }
+  .trail { background-image: radial-gradient(circle, currentColor 1.6px, transparent 1.8px); background-size: 12px 4px; background-repeat: repeat-x; }
+  .bar:focus-within { box-shadow: 0 0 0 3px rgba(34,197,94,.35), 0 10px 30px -10px rgba(21,128,61,.35); border-color: #16a34a; }
+  .sug-item[aria-selected="true"], .sug-item:hover { background: rgba(34,197,94,.12); }
+  .pill[aria-pressed="true"] { background: #16a34a; color: #fff; border-color: #16a34a; }
+  .tab[aria-selected="true"] { color: #15803d; border-color: #16a34a; }
+  .dark .tab[aria-selected="true"] { color: #4ade80; border-color: #4ade80; }
+  :focus-visible { outline: 2px solid #16a34a; outline-offset: 2px; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .rise { animation: rise .25s ease-out; }
+  @media (prefers-reduced-motion: reduce) { .rise { animation: none; } }
+</style>
+</head>
+
+<body class="bg-[#f5f8f6] text-[#10201a] dark:bg-[#0c1511] dark:text-[#e6efe9] min-h-screen flex flex-col transition-colors">
+
+<header class="flex items-center justify-between gap-2 p-4">
+  <a href="./" class="logo text-xl text-brand-700 dark:text-brand-500" aria-label="roujla">roujla</a>
+  <div class="flex items-center gap-2">
+    <button id="langBtn" class="h-10 px-3 rounded-full border border-black/10 dark:border-white/15 bg-white/70 dark:bg-white/5 text-sm font-semibold hover:bg-white dark:hover:bg-white/10" aria-label="Language">EN</button>
+    <button id="themeBtn" class="h-10 w-10 rounded-full border border-black/10 dark:border-white/15 bg-white/70 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10" aria-label="Theme"><i class="fa-solid fa-moon dark:hidden"></i><i class="fa-solid fa-sun hidden dark:inline"></i></button>
+  </div>
+</header>
+
+<main class="flex-1 flex flex-col items-center px-4 pt-[10vh] sm:pt-[14vh]">
+
+  <h1 class="logo text-6xl sm:text-8xl text-brand-700 dark:text-brand-500 select-none">roujla</h1>
+  <div class="trail text-brand-600/70 dark:text-brand-500/60 w-40 sm:w-56 h-1 mt-4 mb-2" aria-hidden="true"></div>
+  <p id="tagline" class="text-sm sm:text-base text-slate-600 dark:text-slate-400 mb-8 text-center"></p>
+
+  <form id="form" class="w-full max-w-2xl relative" role="search" autocomplete="off">
+    <div class="bar flex items-center gap-2 bg-white dark:bg-[#14221b] border border-black/10 dark:border-white/15 rounded-full px-4 h-14 shadow-sm transition">
+      <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
+      <input id="q" type="search" enterkeyhint="search" autofocus spellcheck="false"
+             class="flex-1 bg-transparent outline-none text-lg min-w-0 h-full" aria-autocomplete="list" aria-controls="sug">
+      <button type="button" id="clearBtn" class="hidden h-9 w-9 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white" aria-label="Clear"><i class="fa-solid fa-xmark"></i></button>
+      <button type="button" id="micBtn" class="hidden h-9 w-9 rounded-full text-brand-600 hover:bg-brand-50 dark:hover:bg-white/10" aria-label="Voice"><i class="fa-solid fa-microphone"></i></button>
+      <button type="submit" id="goBtn" class="h-10 px-5 rounded-full bg-brand-600 hover:bg-brand-700 text-white font-bold"></button>
+    </div>
+    <ul id="sug" role="listbox" class="hidden absolute z-20 inset-x-2 top-[3.8rem] bg-white dark:bg-[#14221b] border border-black/10 dark:border-white/15 rounded-2xl shadow-xl overflow-hidden"></ul>
+  </form>
+
+  <div class="w-full max-w-2xl mt-5 flex flex-wrap justify-center gap-x-5 gap-y-1 border-b border-black/10 dark:border-white/10" role="tablist" id="tabs"></div>
+
+  <div class="w-full max-w-2xl mt-4 flex flex-wrap justify-center gap-2" id="engines" role="group"></div>
+
+  <section id="answer" class="w-full max-w-2xl mt-8 mb-16 hidden" aria-live="polite"></section>
+</main>
+
+<footer class="p-6 text-center text-xs text-slate-500 dark:text-slate-400">
+  <span id="foot"></span>
+</footer>
+
+<script>
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+
+  /* ---------- Search engines ---------- */
+  const ENGINES = {
+    google: { name: 'Google',     web: q => `https://www.google.com/search?q=${q}`, images: q => `https://www.google.com/search?q=${q}&tbm=isch`, videos: q => `https://www.google.com/search?q=${q}&tbm=vid`, news: q => `https://www.google.com/search?q=${q}&tbm=nws` },
+    bing:   { name: 'Bing',       web: q => `https://www.bing.com/search?q=${q}`,   images: q => `https://www.bing.com/images/search?q=${q}`,  videos: q => `https://www.bing.com/videos/search?q=${q}`,  news: q => `https://www.bing.com/news/search?q=${q}` },
+    ddg:    { name: 'DuckDuckGo', web: q => `https://duckduckgo.com/?q=${q}`,        images: q => `https://duckduckgo.com/?q=${q}&iax=images&ia=images`, videos: q => `https://duckduckgo.com/?q=${q}&iax=videos&ia=videos`, news: q => `https://duckduckgo.com/?q=${q}&iar=news&ia=news` },
+    brave:  { name: 'Brave',      web: q => `https://search.brave.com/search?q=${q}`, images: q => `https://search.brave.com/images?q=${q}`, videos: q => `https://search.brave.com/videos?q=${q}`, news: q => `https://search.brave.com/news?q=${q}` },
+    yandex: { name: 'Yandex',     web: q => `https://yandex.com/search/?text=${q}`,  images: q => `https://yandex.com/images/search?text=${q}`, videos: q => `https://yandex.com/video/search?text=${q}`, news: q => `https://yandex.com/search/?text=${q}` }
+  };
+  const TABS = ['web', 'images', 'videos', 'news'];
+  const TAB_ICON = { web: 'fa-globe', images: 'fa-image', videos: 'fa-circle-play', news: 'fa-newspaper' };
+
+  /* ---------- Texts (Arabic / English) ---------- */
+  const T = {
+    ar: {
+      dir: 'rtl', other: 'EN', tagline: 'اكتب سؤالك واختر محرك البحث. المعلومة بنقرة واحدة.',
+      placeholder: 'ابحث في الإنترنت...', go: 'بحث', web: 'الكل', images: 'صور', videos: 'فيديو', news: 'أخبار',
+      wiki: 'ويكيبيديا', readMore: 'اقرأ المزيد', noAnswer: 'لا توجد إجابة سريعة لهذا البحث. اختر محرك بحث بالأعلى.',
+      openOn: 'افتح النتائج في', clear: 'مسح', loading: 'جارٍ التحميل...',
+      foot: 'roujla لا يخزن بحثك. النتائج تأتي من محركات البحث التي تختارها.', wikiLang: 'ar'
+    },
+    en: {
+      dir: 'ltr', other: 'AR', tagline: 'Type your question and pick a search engine. Answers in one click.',
+      placeholder: 'Search the web...', go: 'Search', web: 'All', images: 'Images', videos: 'Videos', news: 'News',
+      wiki: 'Wikipedia', readMore: 'Read more', noAnswer: 'No quick answer for this search. Pick a search engine above.',
+      openOn: 'Open results on', clear: 'Clear', loading: 'Loading...',
+      foot: 'roujla does not store your searches. Results come from the search engines you choose.', wikiLang: 'en'
+    }
+  };
+
+  /* ---------- State (localStorage is optional) ---------- */
+  const store = {
+    get(k, d) { try { return localStorage.getItem(k) ?? d; } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  };
+  let lang = store.get('rj_lang', (navigator.language || 'ar').startsWith('ar') ? 'ar' : 'en');
+  let engine = store.get('rj_engine', 'google');
+  let tab = 'web';
+  let sugItems = [], sugIndex = -1, sugCtl = null, sugTimer = null;
+
+  if (!ENGINES[engine]) engine = 'google';
+  const t = () => T[lang];
+
+  /* ---------- Theme ---------- */
+  const root = document.documentElement;
+  const applyTheme = d => { root.classList.toggle('dark', d); root.classList.toggle('light', !d); };
+  applyTheme(store.get('rj_theme', matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') === 'dark');
+  $('themeBtn').onclick = () => { const d = !root.classList.contains('dark'); applyTheme(d); store.set('rj_theme', d ? 'dark' : 'light'); };
+
+  /* ---------- Render UI ---------- */
+  function renderTabs() {
+    $('tabs').innerHTML = TABS.map(k =>
+      `<button role="tab" class="tab px-1 py-2 text-sm font-semibold border-b-2 border-transparent text-slate-600 dark:text-slate-400" data-tab="${k}" aria-selected="${k === tab}">
+         <i class="fa-solid ${TAB_ICON[k]} mx-1"></i>${t()[k]}</button>`).join('');
+    $('tabs').querySelectorAll('.tab').forEach(b => b.onclick = () => { tab = b.dataset.tab; renderTabs(); if ($('q').value.trim()) search(); });
+  }
+  function renderEngines() {
+    $('engines').innerHTML = Object.entries(ENGINES).map(([k, e]) =>
+      `<button type="button" class="pill px-4 h-9 rounded-full border border-black/10 dark:border-white/15 bg-white dark:bg-white/5 text-sm font-semibold hover:border-brand-600" data-e="${k}" aria-pressed="${k === engine}">${e.name}</button>`).join('');
+    $('engines').querySelectorAll('.pill').forEach(b => b.onclick = () => {
+      engine = b.dataset.e; store.set('rj_engine', engine); renderEngines();
+      if ($('q').value.trim()) search(); else $('q').focus();
+    });
+  }
+  function applyLang() {
+    const x = t();
+    root.lang = lang; root.dir = x.dir;
+    $('tagline').textContent = x.tagline; $('q').placeholder = x.placeholder; $('goBtn').textContent = x.go;
+    $('langBtn').textContent = x.other; $('foot').textContent = x.foot; $('clearBtn').setAttribute('aria-label', x.clear);
+    renderTabs(); renderEngines();
+  }
+  $('langBtn').onclick = () => { lang = lang === 'ar' ? 'en' : 'ar'; store.set('rj_lang', lang); applyLang(); const q = $('q').value.trim(); if (q) showAnswer(q); };
+
+  /* ---------- Go to the chosen engine ---------- */
+  function search() {
+    const q = $('q').value.trim();
+    if (!q) return;
+    closeSug();
+    const url = ENGINES[engine][tab](encodeURIComponent(q));
+    location.href = url;
+  }
+  $('form').addEventListener('submit', e => {
+    e.preventDefault();
+    if (sugIndex >= 0 && sugItems[sugIndex]) $('q').value = sugItems[sugIndex];
+    search();
+  });
+
+  /* ---------- Suggestions (Wikipedia titles, CORS-enabled) ---------- */
+  function closeSug() { $('sug').classList.add('hidden'); $('sug').innerHTML = ''; sugItems = []; sugIndex = -1; }
+  function renderSug() {
+    if (!sugItems.length) return closeSug();
+    $('sug').innerHTML = sugItems.map((s, i) =>
+      `<li role="option" class="sug-item flex items-center gap-3 px-4 py-2.5 cursor-pointer" data-i="${i}" aria-selected="${i === sugIndex}">
+         <i class="fa-solid fa-magnifying-glass text-slate-400 text-sm"></i><span class="truncate"></span></li>`).join('');
+    $('sug').querySelectorAll('.sug-item').forEach((li, i) => {
+      li.querySelector('span').textContent = sugItems[i];
+      li.onmousedown = e => { e.preventDefault(); $('q').value = sugItems[i]; search(); };
+    });
+    $('sug').classList.remove('hidden');
+  }
+  function fetchSug(q) {
+    if (sugCtl) sugCtl.abort();
+    sugCtl = new AbortController();
+    const api = `https://${t().wikiLang}.wikipedia.org/w/api.php?action=opensearch&limit=6&namespace=0&format=json&origin=*&search=${encodeURIComponent(q)}`;
+    fetch(api, { signal: sugCtl.signal }).then(r => r.json()).then(d => {
+      if ($('q').value.trim() !== q) return;
+      sugItems = (d[1] || []).filter(s => s.toLowerCase() !== q.toLowerCase());
+      sugIndex = -1; renderSug();
+    }).catch(() => {});
+  }
+
+  /* ---------- Quick answer card (Wikipedia summary) ---------- */
+  async function showAnswer(q) {
+    const box = $('answer');
+    if (!q) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+    box.classList.remove('hidden');
+    box.innerHTML = `<p class="text-center text-sm text-slate-500">${t().loading}</p>`;
+    try {
+      const w = t().wikiLang;
+      const s = await (await fetch(`https://${w}.wikipedia.org/w/api.php?action=opensearch&limit=1&format=json&origin=*&search=${encodeURIComponent(q)}`)).json();
+      const title = (s[1] || [])[0];
+      if (!title) throw new Error('none');
+      const d = await (await fetch(`https://${w}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`)).json();
+      if (!d.extract) throw new Error('none');
+      if ($('q').value.trim() !== q) return;
+      box.innerHTML = `<article class="rise bg-white dark:bg-[#14221b] border border-black/10 dark:border-white/10 rounded-2xl p-5 flex gap-4 items-start">
+          ${d.thumbnail ? `<img src="${d.thumbnail.source}" alt="" class="w-24 h-24 object-cover rounded-xl shrink-0">` : ''}
+          <div class="min-w-0">
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-1"><i class="fa-brands fa-wikipedia-w mx-1"></i>${t().wiki}</p>
+            <h2 class="font-bold text-xl mb-1"></h2>
+            <p class="text-sm leading-7 text-slate-700 dark:text-slate-300 desc"></p>
+            <a target="_blank" rel="noopener" class="inline-block mt-2 text-sm font-semibold text-brand-700 dark:text-brand-500 hover:underline">${t().readMore}</a>
+          </div></article>`;
+      box.querySelector('h2').textContent = d.title;
+      box.querySelector('.desc').textContent = d.extract;
+      box.querySelector('a').href = (d.content_urls && d.content_urls.desktop && d.content_urls.desktop.page) || '#';
+    } catch (e) {
+      if ($('q').value.trim() !== q) return;
+      box.innerHTML = `<p class="rise text-center text-sm text-slate-500 dark:text-slate-400">${t().noAnswer}</p>`;
+    }
+  }
+
+  /* ---------- Input behaviour ---------- */
+  let ansTimer = null;
+  $('q').addEventListener('input', () => {
+    const q = $('q').value.trim();
+    $('clearBtn').classList.toggle('hidden', !q);
+    $('micBtn').classList.toggle('hidden', !!q || !SR);
+    clearTimeout(sugTimer); clearTimeout(ansTimer);
+    if (!q) { closeSug(); showAnswer(''); return; }
+    sugTimer = setTimeout(() => fetchSug(q), 160);
+    ansTimer = setTimeout(() => showAnswer(q), 650);
+  });
+  $('q').addEventListener('keydown', e => {
+    if (!sugItems.length) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); sugIndex = (sugIndex + 1) % sugItems.length; renderSug(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); sugIndex = (sugIndex - 1 + sugItems.length) % sugItems.length; renderSug(); }
+    else if (e.key === 'Escape') closeSug();
+  });
+  $('q').addEventListener('blur', () => setTimeout(closeSug, 120));
+  $('clearBtn').onclick = () => { $('q').value = ''; $('q').dispatchEvent(new Event('input')); $('q').focus(); };
+
+  /* ---------- Voice search ---------- */
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SR) {
+    $('micBtn').classList.remove('hidden');
+    $('micBtn').onclick = () => {
+      const r = new SR();
+      r.lang = lang === 'ar' ? 'ar-DZ' : 'en-US';
+      r.interimResults = false;
+      $('micBtn').classList.add('animate-pulse');
+      r.onresult = e => { $('q').value = e.results[0][0].transcript; $('q').dispatchEvent(new Event('input')); search(); };
+      r.onend = r.onerror = () => $('micBtn').classList.remove('animate-pulse');
+      try { r.start(); } catch (e) {}
+    };
+  }
+
+  /* ---------- Start ---------- */
+  applyLang();
+  const initial = new URLSearchParams(location.search).get('q');
+  if (initial) { $('q').value = initial; $('q').dispatchEvent(new Event('input')); }
+})();
+</script>
+</body>
+</html>
