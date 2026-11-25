@@ -212,11 +212,23 @@ tailwind.config = {
   }
   $('langBtn').onclick = () => { lang = lang === 'ar' ? 'en' : 'ar'; store.set('rj_lang', lang); applyLang(); const q = $('q').value.trim(); if (q) showAnswer(q); };
 
-  /* ---------- ROUJLA AI hand-off ---------- */
-  const AI_SITE = 'https://abdelkarim-laitar.github.io/roujla-ai/';
+  /* ---------- ROUJLA site family (GitHub Pages now, custom domain later) ---------- */
+  const SITES = {
+    github: {
+      ai: 'https://abdelkarim-laitar.github.io/roujla-ai/',
+      soft: 'https://abdelkarim-laitar.github.io/roujlasoft/'
+    },
+    domain: {
+      ai: 'https://ai.roujla.com/',
+      soft: 'https://soft.roujla.com/'
+    }
+  };
+  const SITE = /(^|\.)roujla\.com$/i.test(location.hostname) ? SITES.domain : SITES.github;
+  $('softLink').href = SITE.soft;
+
   function syncAiLink() {
     const q = $('q').value.trim();
-    $('aiLink').href = q ? AI_SITE + '?q=' + encodeURIComponent(q) : AI_SITE;
+    $('aiLink').href = q ? SITE.ai + '?q=' + encodeURIComponent(q) : SITE.ai;
     const sub = $('aiSub');
     if (sub) sub.textContent = q ? t().aiAsk : t().aiSub;
   }
