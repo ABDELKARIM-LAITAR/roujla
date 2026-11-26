@@ -243,11 +243,13 @@ tailwind.config = {
       soft: 'https://abdelkarim-laitar.github.io/roujlasoft/',
       map: 'https://abdelkarim-laitar.github.io/roujla-map/',
       translate: 'https://abdelkarim-laitar.github.io/roujla-translate/'
+    },
     domain: {
       ai: 'https://ai.roujla.com/',
       soft: 'https://soft.roujla.com/',
       map: 'https://map.roujla.com/',
       translate: 'https://translate.roujla.com/'
+    }
   };
   const SITE = /(^|\.)roujla\.com$/i.test(location.hostname) ? SITES.domain : SITES.github;
   $('softLink').href = SITE.soft;
