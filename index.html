@@ -57,6 +57,7 @@ tailwind.config = {
   .app-ico { width: 27px; height: 27px; border-radius: 8px; display: grid; place-items: center; flex: none; color: #fff; }
   .app-ai .app-ico { background: linear-gradient(135deg,#22c55e,#096a38); box-shadow: 0 4px 10px -5px rgba(22,163,74,.9); }
   .app-soft .app-ico { background: linear-gradient(135deg,#334155,#0f172a); }
+  .app-map .app-ico { background: linear-gradient(135deg,#2dd4bf,#0f766e); box-shadow: 0 4px 10px -5px rgba(13,148,136,.9); }
   .app-ico svg { width: 15px; height: 15px; }
   .app-txt { display: flex; flex-direction: column; line-height: 1.05; text-align: start; }
   .app-txt b { font-size: 11px; font-weight: 800; letter-spacing: .02em; direction: ltr; }
@@ -91,6 +92,12 @@ tailwind.config = {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>
         </span>
         <span class="app-txt"><b>ROUJLA SOFT</b><small id="softSub">تحميل البرامج</small></span>
+      </a>
+      <a id="mapLink" class="app-tile app-map" href="https://abdelkarim-laitar.github.io/roujla-map/" target="_blank" rel="noopener" title="ROUJLA MAP - خريطة العالم" aria-label="ROUJLA MAP - خريطة العالم">
+        <span class="app-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.6 2.4 4 5.6 4 9s-1.4 6.6-4 9c-2.6-2.4-4-5.6-4-9s1.4-6.6 4-9z"/></svg>
+        </span>
+        <span class="app-txt"><b>ROUJLA MAP</b><small id="mapSub">خريطة العالم</small></span>
       </a>
     </nav>
     <button id="langBtn" class="h-10 px-3 rounded-full border border-black/10 dark:border-white/15 bg-white/70 dark:bg-white/5 text-sm font-semibold hover:bg-white dark:hover:bg-white/10" aria-label="Language">EN</button>
@@ -153,7 +160,9 @@ tailwind.config = {
       openOn: 'افتح النتائج في', clear: 'مسح', loading: 'جارٍ التحميل...',
       foot: 'roujla لا يخزن بحثك. النتائج تأتي من محركات البحث التي تختارها.', wikiLang: 'ar',
       aiSub: 'اسأل الذكاء', softSub: 'تحميل البرامج', aiAsk: 'اسأل عن هذا',
-      aiTitle: 'ROUJLA AI - اسأل الذكاء الاصطناعي', softTitle: 'ROUJLA SOFT - تحميل البرامج'
+      mapSub: 'خريطة العالم', mapAsk: 'اعرض على الخريطة',
+      aiTitle: 'ROUJLA AI - اسأل الذكاء الاصطناعي', softTitle: 'ROUJLA SOFT - تحميل البرامج',
+      mapTitle: 'ROUJLA MAP - خريطة العالم'
     },
     en: {
       dir: 'ltr', other: 'AR', tagline: 'Type your question and pick a search engine. Answers in one click.',
@@ -162,7 +171,9 @@ tailwind.config = {
       openOn: 'Open results on', clear: 'Clear', loading: 'Loading...',
       foot: 'roujla does not store your searches. Results come from the search engines you choose.', wikiLang: 'en',
       aiSub: 'Ask the AI', softSub: 'Download apps', aiAsk: 'Ask this',
-      aiTitle: 'ROUJLA AI - Ask the AI', softTitle: 'ROUJLA SOFT - Download apps'
+      mapSub: 'World map', mapAsk: 'Show on map',
+      aiTitle: 'ROUJLA AI - Ask the AI', softTitle: 'ROUJLA SOFT - Download apps',
+      mapTitle: 'ROUJLA MAP - World map'
     }
   };
 
@@ -206,8 +217,10 @@ tailwind.config = {
     $('tagline').textContent = x.tagline; $('q').placeholder = x.placeholder; $('goBtn').textContent = x.go;
     $('langBtn').textContent = x.other; $('foot').textContent = x.foot; $('clearBtn').setAttribute('aria-label', x.clear);
     $('aiSub').textContent = x.aiSub; $('softSub').textContent = x.softSub;
+    if ($('mapSub')) $('mapSub').textContent = x.mapSub;
     $('aiLink').title = x.aiTitle; $('aiLink').setAttribute('aria-label', x.aiTitle);
     $('softLink').title = x.softTitle; $('softLink').setAttribute('aria-label', x.softTitle);
+    if ($('mapLink')) { $('mapLink').title = x.mapTitle; $('mapLink').setAttribute('aria-label', x.mapTitle); }
     renderTabs(); renderEngines(); syncAiLink();
   }
   $('langBtn').onclick = () => { lang = lang === 'ar' ? 'en' : 'ar'; store.set('rj_lang', lang); applyLang(); const q = $('q').value.trim(); if (q) showAnswer(q); };
@@ -216,11 +229,13 @@ tailwind.config = {
   const SITES = {
     github: {
       ai: 'https://abdelkarim-laitar.github.io/roujla-ai/',
-      soft: 'https://abdelkarim-laitar.github.io/roujlasoft/'
+      soft: 'https://abdelkarim-laitar.github.io/roujlasoft/',
+      map: 'https://abdelkarim-laitar.github.io/roujla-map/'
     },
     domain: {
       ai: 'https://ai.roujla.com/',
-      soft: 'https://soft.roujla.com/'
+      soft: 'https://soft.roujla.com/',
+      map: 'https://map.roujla.com/'
     }
   };
   const SITE = /(^|\.)roujla\.com$/i.test(location.hostname) ? SITES.domain : SITES.github;
@@ -229,8 +244,11 @@ tailwind.config = {
   function syncAiLink() {
     const q = $('q').value.trim();
     $('aiLink').href = q ? SITE.ai + '?q=' + encodeURIComponent(q) : SITE.ai;
+    if ($('mapLink')) $('mapLink').href = q ? SITE.map + '?q=' + encodeURIComponent(q) : SITE.map;
     const sub = $('aiSub');
     if (sub) sub.textContent = q ? t().aiAsk : t().aiSub;
+    const msub = $('mapSub');
+    if (msub) msub.textContent = q ? t().mapAsk : t().mapSub;
   }
 
   /* ---------- Go to the chosen engine ---------- */
