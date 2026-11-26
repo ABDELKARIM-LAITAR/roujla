@@ -58,6 +58,7 @@ tailwind.config = {
   .app-ai .app-ico { background: linear-gradient(135deg,#22c55e,#096a38); box-shadow: 0 4px 10px -5px rgba(22,163,74,.9); }
   .app-soft .app-ico { background: linear-gradient(135deg,#334155,#0f172a); }
   .app-map .app-ico { background: linear-gradient(135deg,#2dd4bf,#0f766e); box-shadow: 0 4px 10px -5px rgba(13,148,136,.9); }
+  .app-tr .app-ico { background: linear-gradient(135deg,#a78bfa,#6d28d9); box-shadow: 0 4px 10px -5px rgba(124,58,237,.9); }
   .app-ico svg { width: 15px; height: 15px; }
   .app-txt { display: flex; flex-direction: column; line-height: 1.05; text-align: start; }
   .app-txt b { font-size: 11px; font-weight: 800; letter-spacing: .02em; direction: ltr; }
@@ -98,6 +99,12 @@ tailwind.config = {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.6 2.4 4 5.6 4 9s-1.4 6.6-4 9c-2.6-2.4-4-5.6-4-9s1.4-6.6 4-9z"/></svg>
         </span>
         <span class="app-txt"><b>ROUJLA MAP</b><small id="mapSub">خريطة العالم</small></span>
+      </a>
+      <a id="trLink" class="app-tile app-tr" href="https://abdelkarim-laitar.github.io/roujla-translate/" target="_blank" rel="noopener" title="ROUJLA TRANSLATE - ترجمة فورية" aria-label="ROUJLA TRANSLATE - ترجمة فورية">
+        <span class="app-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14M5 8l3-3M5 8l3 3M19 16H5m14 0-3-3m3 3-3 3"/></svg>
+        </span>
+        <span class="app-txt"><b>ROUJLA TRANSLATE</b><small id="trSub">ترجمة فورية</small></span>
       </a>
     </nav>
     <button id="langBtn" class="h-10 px-3 rounded-full border border-black/10 dark:border-white/15 bg-white/70 dark:bg-white/5 text-sm font-semibold hover:bg-white dark:hover:bg-white/10" aria-label="Language">EN</button>
@@ -161,8 +168,9 @@ tailwind.config = {
       foot: 'roujla لا يخزن بحثك. النتائج تأتي من محركات البحث التي تختارها.', wikiLang: 'ar',
       aiSub: 'اسأل الذكاء', softSub: 'تحميل البرامج', aiAsk: 'اسأل عن هذا',
       mapSub: 'خريطة العالم', mapAsk: 'اعرض على الخريطة',
+      trSub: 'ترجمة فورية', trAsk: 'ترجم هذا',
       aiTitle: 'ROUJLA AI - اسأل الذكاء الاصطناعي', softTitle: 'ROUJLA SOFT - تحميل البرامج',
-      mapTitle: 'ROUJLA MAP - خريطة العالم'
+      mapTitle: 'ROUJLA MAP - خريطة العالم', trTitle: 'ROUJLA TRANSLATE - ترجمة فورية'
     },
     en: {
       dir: 'ltr', other: 'AR', tagline: 'Type your question and pick a search engine. Answers in one click.',
@@ -172,8 +180,9 @@ tailwind.config = {
       foot: 'roujla does not store your searches. Results come from the search engines you choose.', wikiLang: 'en',
       aiSub: 'Ask the AI', softSub: 'Download apps', aiAsk: 'Ask this',
       mapSub: 'World map', mapAsk: 'Show on map',
+      trSub: 'Instant translation', trAsk: 'Translate this',
       aiTitle: 'ROUJLA AI - Ask the AI', softTitle: 'ROUJLA SOFT - Download apps',
-      mapTitle: 'ROUJLA MAP - World map'
+      mapTitle: 'ROUJLA MAP - World map', trTitle: 'ROUJLA TRANSLATE - Instant translation'
     }
   };
 
@@ -218,9 +227,11 @@ tailwind.config = {
     $('langBtn').textContent = x.other; $('foot').textContent = x.foot; $('clearBtn').setAttribute('aria-label', x.clear);
     $('aiSub').textContent = x.aiSub; $('softSub').textContent = x.softSub;
     if ($('mapSub')) $('mapSub').textContent = x.mapSub;
+    if ($('trSub')) $('trSub').textContent = x.trSub;
     $('aiLink').title = x.aiTitle; $('aiLink').setAttribute('aria-label', x.aiTitle);
     $('softLink').title = x.softTitle; $('softLink').setAttribute('aria-label', x.softTitle);
     if ($('mapLink')) { $('mapLink').title = x.mapTitle; $('mapLink').setAttribute('aria-label', x.mapTitle); }
+    if ($('trLink')) { $('trLink').title = x.trTitle; $('trLink').setAttribute('aria-label', x.trTitle); }
     renderTabs(); renderEngines(); syncAiLink();
   }
   $('langBtn').onclick = () => { lang = lang === 'ar' ? 'en' : 'ar'; store.set('rj_lang', lang); applyLang(); const q = $('q').value.trim(); if (q) showAnswer(q); };
@@ -230,25 +241,29 @@ tailwind.config = {
     github: {
       ai: 'https://abdelkarim-laitar.github.io/roujla-ai/',
       soft: 'https://abdelkarim-laitar.github.io/roujlasoft/',
-      map: 'https://abdelkarim-laitar.github.io/roujla-map/'
-    },
+      map: 'https://abdelkarim-laitar.github.io/roujla-map/',
+      translate: 'https://abdelkarim-laitar.github.io/roujla-translate/'
     domain: {
       ai: 'https://ai.roujla.com/',
       soft: 'https://soft.roujla.com/',
-      map: 'https://map.roujla.com/'
-    }
+      map: 'https://map.roujla.com/',
+      translate: 'https://translate.roujla.com/'
   };
   const SITE = /(^|\.)roujla\.com$/i.test(location.hostname) ? SITES.domain : SITES.github;
   $('softLink').href = SITE.soft;
+  if ($('trLink')) $('trLink').href = SITE.translate;
 
   function syncAiLink() {
     const q = $('q').value.trim();
     $('aiLink').href = q ? SITE.ai + '?q=' + encodeURIComponent(q) : SITE.ai;
     if ($('mapLink')) $('mapLink').href = q ? SITE.map + '?q=' + encodeURIComponent(q) : SITE.map;
+    if ($('trLink')) $('trLink').href = q ? SITE.translate + '?q=' + encodeURIComponent(q) : SITE.translate;
     const sub = $('aiSub');
     if (sub) sub.textContent = q ? t().aiAsk : t().aiSub;
     const msub = $('mapSub');
     if (msub) msub.textContent = q ? t().mapAsk : t().mapSub;
+    const tsub = $('trSub');
+    if (tsub) tsub.textContent = q ? t().trAsk : t().trSub;
   }
 
   /* ---------- Go to the chosen engine ---------- */
